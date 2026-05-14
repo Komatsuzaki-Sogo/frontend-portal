@@ -3,6 +3,7 @@ import { formatCategoryName } from '@/lib/formatCategoryName';
 import { notFound } from 'next/navigation';
 import { BreadcrumbSetter } from '@/components/ui/BreadcrumbSetter';
 import { CategoryContent } from '@/components/pages/category/CategoryContent';
+import { ButtonBack } from '@/components/ui/ButtonBack';
 
 interface Props {
   params: Promise<{
@@ -43,6 +44,7 @@ export default async function CategoryPage({ params }: Props) {
         items={[{ text: 'ホーム', href: '/' }, { text: categoryDisplayName }]}
       />
       <CategoryContent docs={docs} categoryDisplayName={categoryDisplayName} />
+      <ButtonBack text="ホームに戻る" href="/" />
     </>
   );
 }

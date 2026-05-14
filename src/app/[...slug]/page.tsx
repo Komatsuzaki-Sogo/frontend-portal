@@ -59,7 +59,7 @@ export default async function Page({ params }: Props) {
     <>
       <BreadcrumbSetter items={breadcrumbItems} />
       <SlugContent frontmatter={frontmatter} content={file.content} />
-      <ButtonBack />
+      <ButtonBack text="一覧に戻る" href={`/${slug[0]}`} />
     </>
   );
 }

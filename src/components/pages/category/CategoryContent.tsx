@@ -18,12 +18,6 @@ export const CategoryContent = ({
       <H1>{categoryDisplayName} ドキュメント</H1>
       <Text>{docs.length}件の記事があります。</Text>
       <DocList docs={docs} />
-      <Link
-        href="/"
-        className="text-blue-500 hover:underline mt-8 inline-block"
-      >
-        ← ホームに戻る
-      </Link>
     </>
   );
 };
