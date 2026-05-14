@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getMdFile, getAllMdPaths } from '@/lib/mdLoader';
-import { formatCategoryName } from '@/lib/utils';
+import { formatCategoryName } from '@/lib/formatCategoryName';
 import type { Frontmatter } from '@/types/frontmatter';
 import { ButtonBack } from '@/components/ui/ButtonBack';
 import { BreadcrumbSetter } from '@/components/ui/BreadcrumbSetter';

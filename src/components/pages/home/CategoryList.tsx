@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { formatCategoryName } from '@/lib/utils';
+import { formatCategoryName } from '@/lib/formatCategoryName';
 import type { CategoryInfo, CategoryListProps } from '@/types/categoryInfo';
 
 const CategoryItem = ({ category }: { category: CategoryInfo }) => {

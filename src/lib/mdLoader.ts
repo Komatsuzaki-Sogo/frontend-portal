@@ -1,14 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import { CATEGORY_ORDER } from '@/constants/categoryOrder';
 import type { Frontmatter } from '@/types/frontmatter';
 import type { MdFile } from '@/types/mdFile';
 import type { DocMeta } from '@/types/docMeta';
 
 const CONTENT_DIR = path.join(process.cwd(), 'content');
-
-// 表示順を定義する配列
-const CATEGORY_ORDER = ['html', 'css', 'typescript'];
 
 /**
  * マークダウンファイルを読み込み、フロントマターとコンテンツを抽出

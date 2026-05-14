@@ -1,5 +1,5 @@
 import { getAllCategoriesWithCount, getDocsByCategory } from '@/lib/mdLoader';
-import { formatCategoryName } from '@/lib/utils';
+import { formatCategoryName } from '@/lib/formatCategoryName';
 import { notFound } from 'next/navigation';
 import { BreadcrumbSetter } from '@/components/ui/BreadcrumbSetter';
 import { CategoryContent } from '@/components/pages/category/CategoryContent';

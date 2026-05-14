@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getAllCategoriesWithCount } from '@/lib/mdLoader';
-import { formatCategoryName } from '@/lib/utils';
+import { formatCategoryName } from '@/lib/formatCategoryName';
 
 export const HeaderNavigation = async () => {
   const categories = await getAllCategoriesWithCount();

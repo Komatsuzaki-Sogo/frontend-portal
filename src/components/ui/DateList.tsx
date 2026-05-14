@@ -1,4 +1,4 @@
-import { shouldShowUpdatedDate } from '@/lib/utils';
+import { shouldShowUpdatedDate } from '@/lib/shouldShowUpdatedDate';
 
 interface DateListProps {
   publishDate: string;
