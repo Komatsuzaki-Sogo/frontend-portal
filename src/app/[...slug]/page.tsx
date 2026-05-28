@@ -33,7 +33,9 @@ export async function generateMetadata({ params }: Props) {
   const frontmatter: Frontmatter = file.frontmatter;
 
   return {
-    title: frontmatter.title || 'Document',
+    title:
+      `${frontmatter.title} | ${formatCategoryName(slug[0])} | Document` ||
+      'Document',
     description: `${frontmatter.title}について説明しているページです。`,
   };
 }
