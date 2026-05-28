@@ -1,9 +1,11 @@
 export function formatCategoryName(category: string): string {
   switch (category) {
-    case 'css':
-      return 'CSS';
+    case 'basic-policy':
+      return '基本方針';
     case 'html':
       return 'HTML';
+    case 'css':
+      return 'CSS';
     case 'typescript':
       return 'TypeScript';
     default:
