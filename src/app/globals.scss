@@ -39,12 +39,38 @@ body {
 }
 
 .mdContent {
+  > *:first-child {
+    margin-top: 0 !important;
+  }
+
+  > *:last-child {
+    margin-bottom: 0 !important;
+  }
+
   h2 {
     font-size: 32px;
     padding-bottom: 8px;
     border-bottom: 4px solid var(--foreground);
     font-weight: bold;
     margin-top: 40px;
+  }
+
+  h3 {
+    font-size: 24px;
+    padding-left: 8px;
+    border-left: 4px solid var(--foreground);
+    font-weight: bold;
+    margin-top: 32px;
+  }
+
+  p,
+  ul {
+    code {
+      background-color: lightgray;
+      padding: 0 2px;
+      border-radius: 2px;
+      font-size: 80%;
+    }
   }
 
   pre {
@@ -57,10 +83,52 @@ body {
     code {
       color: #ffffff;
     }
+
+    .language-html {
+      .hljs-comment {
+        width: 100%;
+      }
+    }
+  }
+
+  ul {
+    margin-top: 40px;
+
+    ul {
+      margin-top: 8px;
+      margin-left: 16px;
+    }
+  }
+
+  p {
+    margin-top: 24px;
+
+    + p {
+      margin-top: 16px;
+    }
+  }
+
+  table {
+    border-collapse: collapse;
+    margin-top: 40px;
+    width: 100%;
+    border: 1px solid lightgray;
+
+    thead {
+      background-color: rgb(238, 238, 238);
+    }
+    th,
+    td {
+      padding: 8px 16px;
+      text-align: left;
+      border: 1px solid lightgray;
+    }
   }
 
   // 直下の最初の子要素がulの時はアンカーリンクとして機能する
-  > ul:first-child {
+  // > ul:first-child {
+  // #始まりの場合にアンカーリンクとして機能する
+  > ul:has(a[href^="#"]) {
     background-color: lightblue;
     padding: 1rem;
     border-radius: 16px;
@@ -81,9 +149,5 @@ body {
         top: -5px;
       }
     }
-  }
-
-  p {
-    margin-top: 24px;
   }
 }
