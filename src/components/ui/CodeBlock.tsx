@@ -47,7 +47,7 @@ export const CodeBlock = ({ language, code }: CodeBlockProps) => {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 text-slate-100">
+    <div className="relative rounded-2xl text-slate-100">
       <div className="absolute right-3 top-3 z-10 w-fit">
         <button
           type="button"
@@ -58,8 +58,8 @@ export const CodeBlock = ({ language, code }: CodeBlockProps) => {
         </button>
       </div>
 
-      <div className="flex overflow-x-auto p-4">
-        <div className="hidden min-w-[2.25rem] flex-col border-r border-slate-900 pr-3 text-right text-xs text-slate-500 md:flex">
+      <div className="flex py-2">
+        <div className="flex min-w-[2.25rem] flex-col border-r border-slate-900 pr-2 text-right text-xs text-slate-500 md:flex">
           {lineNumbers.map((_, index) => (
             <span key={index} className="block leading-6 select-none">
               {index + 1}
@@ -67,12 +67,10 @@ export const CodeBlock = ({ language, code }: CodeBlockProps) => {
           ))}
         </div>
 
-        <pre className="w-full overflow-x-auto text-sm leading-6 mt-0!">
-          <code
-            className={`language-${language} block whitespace-pre-wrap break-words`}
-            dangerouslySetInnerHTML={{ __html: highlightedCode }}
-          />
-        </pre>
+        <code
+          className={`language-${language} block`}
+          dangerouslySetInnerHTML={{ __html: highlightedCode }}
+        />
       </div>
     </div>
   );
