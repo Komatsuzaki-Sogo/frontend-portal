@@ -14,9 +14,11 @@ order: 1
 - [ページタイトル（title）](#ページタイトルtitle)
 - [ページの説明文（description）](#ページの説明文description)
 - [OGP（Open Graph Protocol）](#ogpopen-graph-protocol)
+- [構造化データ：パンくずリスト（BreadcrumbList）](#構造化データパンくずリストbreadcrumblist)
 - [コードの記述](#コードの記述)
 - [閉じタグの省略禁止](#閉じタグの省略禁止)
 - [空要素（セルフクロージングタグ）の扱い](#空要素セルフクロージングタグの扱い)
+- [パス表記](#パス表記)
 
 ## ドキュメントタイプ宣言（DOCTYPE）
 
@@ -84,7 +86,7 @@ Webページで使用するテキストのエンコーディング（文字コ�
 
 ## ページタイトル（title）
 
-検索結果の画面、ブラウザのタブ、ブックマーク（お気に入り）登録時、およびSNSでシェアされた際の標準タイトルとして表示される、すべてのWebページにおいて最重要なテキスト要素です。検索エンジン（SEO）のクローラーがページ内容を理解する最大のシグナルとなります。
+検索結果の画面、ブラウザのタブ、ブックマーク（お気に入り）登録時、およびSNSでシェアされた際の標準タイトルとして表示される、すべてのWebページにおいて最重要なテキスト要素です。検索エンジン（SEO）のクローラーがページ内容を理解する最大のシグナルとなるため、ページごとに最適な`title`を適切に記述してください。
 
 ```html
 <title>○○</title>
@@ -94,7 +96,7 @@ Webページで使用するテキストのエンコーディング（文字コ�
 
 ## ページの説明文（description）
 
-検索結果のタイトルの下に表示される、ページの概要を説明する文章（スニペット）です。検索順位に直接影響するわけではありませんが、検索したユーザーが「このページをクリックするかどうか」を決めるクリック率（CTR）を左右する重要な要素です。
+検索結果のタイトルの下に表示される、ページの概要を説明する文章（スニペット）です。検索順位に直接影響するわけではありませんが、検索したユーザーが「このページをクリックするかどうか」を決めるクリック率（CTR）を左右する重要な要素となるため、ページの内容に沿った`description`を適切に記述してください。
 
 ```html
 <meta name="description" content="text text text text" />
@@ -102,9 +104,7 @@ Webページで使用するテキストのエンコーディング（文字コ�
 
 ## OGP（Open Graph Protocol）
 
-Facebook、LINE、Slack、ビジネスチャットなどでWebページのURLが共有された際、リッチなカード形式（タイトル・説明文・アイキャッチ画像など）で魅力的に表示させるための共通のメタ規格です。SNS経由の流入数・認知度に爆発的な影響を与えます。
-
-### 運用ルール
+Facebook、LINE、Slack、ビジネスチャットなどでWebページのURLが共有された際、リッチなカード形式（タイトル・説明文・アイキャッチ画像など）で魅力的に表示させるための共通のメタ規格です。SNS経由の流入数・認知度に大きな影響を与えるため、すべてのページにおいて`OGP`を適切に記述してください
 
 - `property` 属性を使って、それぞれの要素を定義します。
 - OGP内に記述するURLや画像パスは、外部のSNSサーバーが読み取りにくるため、**すべて絶対パス（`https://...`）**で記述してください。
@@ -129,9 +129,51 @@ Facebook、LINE、Slack、ビジネスチャットなどでWebページのURLが
 <meta property="og:site_name" content="○○" />
 <meta
   property="og:image"
-  content="https://example.com/assets/img/ogp/article-01.jpg"
+  content="https://example.com/assets/img/common/ogp.jpg"
 />
 <meta property="og:locale" content="ja_JP" />
+```
+
+## 構造化データ：パンくずリスト（BreadcrumbList）
+
+パンくずリストの構造化データは、Webサイト内のWebページの位置（階層構造）を検索エンジンへ正確に伝えるためのマークアップです。
+これを実装することで、Googleなどの検索結果に表示されるURL部分が、サイトの階層に合わせた綺麗なテキスト（例: `ホーム > HTML一覧 > ダミータイトル`）で表示され、ユーザーのクリック率（CTR）向上が期待できます。
+
+* **記述方式：** `JSON-LD` 方式を採用し、`<head>` 内または `</body>` 閉じタグの直前に記述します。
+* **URLの指定（MUST）：** `item` プロパティに指定するURLは、必ずプロトコル（`https://`）から始まる**絶対パス**で記述してください。
+* **位置の連番（MUST）：** `position` プロパティは、トップページ（ホーム）を `1` とし、下層にいくにつれて `2`, `3` と1ずつ増える連番で記述します。
+* **画面表示との一致（MUST）：** 構造化データ内の `name`（ページ名）や階層順は、**実際の画面上に表示されているパンくずリストの内容と完全に一致**させてください。
+
+### 1. パンくずリスト（BreadcrumbList）
+ユーザーがサイト内のどこにいるかを示す階層構造を検索エンジンに伝えます。検索結果のURL表示部分が綺麗に日本語化されます。
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "ホーム",
+      "item": "https://example.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "HTML一覧",
+      "item": "https://example.com/html/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "ダミータイトル",
+      "item": "https://example.com/html/web-design/dummy"
+    }
+  ]
+}
+</script>
 ```
 
 ## コードの記述
@@ -181,4 +223,15 @@ HTML5の仕様（W3C/WHATWG規格）上、一部の要素（`<li>`, `<td>`, `<p>
 <img src="assets/img/hero.jpg" alt="メインビジュアル">
 <br>
 <input type="email" name="email" id="email">
+```
+
+# パス表記
+
+サイト内のリソースへのパス表記はルートパス（`/`から始まる表記）で記述してください。
+
+```html
+<script type="module" src="/shared/js/main.js"></script>
+<link rel="stylesheet" href="/shared/css/style.css">
+<img src="/subpage/example.png" alt="">
+<a href="/subpage/example">リンク</a>
 ```
