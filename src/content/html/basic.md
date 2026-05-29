@@ -61,7 +61,7 @@ Webページで使用するテキストのエンコーディング（文字コ�
 <head>
   <meta charset="UTF-8">
 </head>
-...
+  ...
 </html>
 ```
 

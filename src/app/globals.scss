@@ -39,6 +39,8 @@ body {
 }
 
 .mdContent {
+  margin-top: 40px;
+
   > *:first-child {
     margin-top: 0 !important;
   }
@@ -94,6 +96,22 @@ body {
   ul {
     margin-top: 40px;
 
+    li {
+      position: relative;
+      padding-left: 1em;
+      &::before {
+        content: '';
+        position: absolute;
+        display: block;
+        top: 0.5em;
+        left: 0.35em;
+        width: 0.3em;
+        height: 0.3em;
+        border-radius: 50%;
+        background-color: var(--foreground);
+      }
+    }
+
     ul {
       margin-top: 8px;
       margin-left: 16px;
@@ -125,6 +143,13 @@ body {
     }
   }
 
+  a {
+    text-decoration: underline;
+    &:any-link:hover {
+      text-decoration: none;
+    }
+  }
+
   // 直下の最初の子要素がulの時はアンカーリンクとして機能する
   // > ul:first-child {
   // #始まりの場合にアンカーリンクとして機能する
@@ -136,6 +161,13 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
+
+    li {
+      padding-left: 0;
+      &::before {
+        content: none;
+      }
+    }
 
     a {
       padding-left: 16px;

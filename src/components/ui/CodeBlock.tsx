@@ -59,7 +59,7 @@ export const CodeBlock = ({ language, code }: CodeBlockProps) => {
       </div>
 
       <div className="flex overflow-x-auto p-4">
-        <div className="hidden min-w-[2.25rem] flex-col gap-0.5 border-r border-slate-900 pr-3 text-right text-xs text-slate-500 md:flex">
+        <div className="hidden min-w-[2.25rem] flex-col border-r border-slate-900 pr-3 text-right text-xs text-slate-500 md:flex">
           {lineNumbers.map((_, index) => (
             <span key={index} className="block leading-6 select-none">
               {index + 1}
