@@ -1,0 +1,144 @@
+---
+title: 'JS / TSガイドライン：TypeScriptの型安全ルール'
+
+publishDate: 2026-06-01
+
+category: 'typescript'
+
+order: 3
+---
+- [型推論の活用と不要な型注釈の省略](#型推論の活用と不要な型注釈の省略)
+- [any型の原則禁止とunknown型の活用](#any型の原則禁止とunknown型の活用)
+- [型定義の使い分け（interface と type）](#型定義の使い分けinterface-と-type)
+- [型アサーションと非ヌルアサーションの制限](#型アサーションと非ヌルアサーションの制限)
+
+## 型推論の活用と不要な型注釈の省略
+
+TypeScriptは、コードの文脈から自動的にデータ型を決定する強力な「型推論（Type Inference）」の機能を持っています。型安全を担保しつつ、コードをクリーンで読みやすく保つため、**コンパイラが型を完全に推論できる場所では、明示的な型注釈（型の書き込み）を省略**してください。
+
+```typescript
+// BAD
+const name: string = 'John'; // 型推論で十分
+
+// GOOD
+const name = 'John';
+```
+
+## any型の原則禁止とunknown型の活用
+
+TypeScriptの最大のメリットである「コンパイル時のエラー検知」と「エディタの強力なコード補完」を無効化させないため、すべてのデータ型を不問にする `any` 型の使用を制限します。
+
+### 📋 運用ルール
+* **`any` 型のコード記述は原則禁止（MUST NOT）：**
+  実装中に一時的に型エラーを消す目的や、型定義を考えるのが面倒という理由で `any` を使用してはいけません。
+  ※プロジェクトの `tsconfig.json` では、意図しない any の混入を防ぐため `"noImplicitAny": true` を必須設定とします。
+* **型が不確定な場合は `unknown` 型を使用する：**
+  外部APIからのレスポンスや、サードパーティ製ライブラリの都合でどうしても事前に型が決定できない変数を定義する場合は、`any` ではなく **`unknown`** 型を使用してください。
+* **型ガード（Type Guard）による絞り込みの徹底：**
+  `unknown` 型のデータを実際に使用（プロパティへのアクセスや計算）する際は、必ず `if` 文や `typeof`、`instanceof` などを使い、ブラウザが実行する前に安全な型へと「絞り込み（Narrowing）」を行ってください。
+
+```typescript
+// BAD
+const handleApiResponseBad = (data: any) => {
+  console.log(data.useName); // エディタは警告してくれません
+};
+
+// GOOD
+const handleApiResponse = (data: unknown) => {
+  // 型ガードを使って、データが特定の構造を持っているか安全にチェック（絞り込み）する
+  if (data && typeof data === 'object' && 'userName' in data) {
+    // この if 文の内部でのみ、data は 「userName を持つオブジェクト」として安全に扱える
+    console.log(data.userName);
+  }
+};
+```
+
+## 型定義の使い分け（interface と type）
+
+TypeScriptでオブジェクトの構造やカスタム型を定義する手法には、`interface`（インターフェース）と `type`（型エイリアス / type alias）の2種類があります。どちらを使っても同様の型定義ができるケースが多いですが、チーム内での記述のブレをなくし、コードの拡張性と堅牢性を両立させるため、以下の基準に従って厳格に使い分けてください。
+
+### 使い分けの判断基準（早見表）
+
+基本原則として、**「オブジェクトの形を定義するときは `interface`」「それ以外の複雑な型や値の制限をするときは `type`」** という方針をとります。
+
+| 構文 | 本質的な性質 | どういうときに使うか（選定基準） |
+| :--- | :--- | :--- |
+| **`interface`** | **拡張可能。**<br>同名の定義を後から宣言すると自動で「マージ（結合）」される（同名宣言による拡張性）。 | ・**コンポーネント（React/Vue等）のProps定義**<br>・APIのレスポンスデータの構造定義<br>・クラス（Class）の設計図（実装を強制する抽象型） |
+| **`type`** | **堅牢・不変。**<br>一度定義したら後から拡張できない。オブジェクトだけでなく、値の制限や結合が可能。 | ・**状態や値のバリエーション（Union型）の定義**<br>・プリミティブ型（文字列や数値）への別名定義<br>・関数の型定義（コールバック関数など） |
+
+### 運用ルール
+
+* **基本のオブジェクト定義は `interface` を標準とする：**
+  データの塊を表現するオブジェクト型を新しく作成する際は、TypeScript標準の推奨およびパフォーマンス（コンパイル速度）の観点から、`interface` を優先して使用します。
+* **Union型（結合型）が必要な場合は `type` を必須とする：**
+  「特定の文字列しか受け付けない」という値の制限や、複数の型を `|` で繋ぐ処理は `interface` では記述できません。必ず `type` を使用してください。
+* **同名マージを意図しないアプリケーションコードでの衝突に注意：**
+  `interface` は同名で宣言すると自動で合体する性質があるため、プロジェクト固有の処理（ビジネスロジック）で意図せず同じ名前の `interface` を複数ファイルで作ってしまうと、型が勝手に混ざってバグの原因になります。名前空間（命名）の重複には十分注意してください。
+
+```typescript
+// ユーザーデータの「構造」を定義するため interface が適切
+interface UserProfile {
+  id: string;
+  name: string;
+  age: number;
+}
+
+// コンポーネントの Props 定義（拡張性を考慮して interface を標準とする）
+interface CustomCardProps {
+  title: string;
+  thumbnailUrl: string;
+  hasShadow?: boolean;
+}
+
+// 特定の文字列（ステータス）しか受け付けない制約（Union型）を作るため type が必須
+type StatusText = 'success' | 'error' | 'pending';
+
+// クリックイベント時のコールバック関数の形に名前をつけるため type が適切
+type ClickHandler = (event: MouseEvent) => void;
+
+// 既存の型を組み合わせて新しい型（交差型: Intersection）を作るため type が適切
+type AdminUser = UserProfile & {
+  permissions: string[];
+};
+```
+
+## 型アサーションと非ヌルアサーションの制限
+
+実装者がコンパイラに対して「型チェックをスキップして、私が指定した型として強制的に認識しなさい」と命令する構文は、バグの温床になるため使用を厳しく制限します。
+
+- 型アサーション（`as` 構文）の原則禁止：
+`const data = {} as MyType;` のような記述は、実際の中身が空のオブジェクトであってもコンパイラが騙されてエラーをスルーしてしまうため原則禁止です。型を変換したい場合は、正しい初期値を持たせるか、型安全な関数を通して処理してください。
+- 非ヌルアサーション（`!` 構文）の完全禁止：
+変数の末尾に `!` をつける処理（例：`user!.name`）は、「このデータは絶対に `null` や `undefined` にはならない」とコンパイラを強制的に黙らせる危険な構文です。実際にはデータが届いておらず中身が空だった場合、実行時にJavaScriptがクラッシュするため使用を一切禁止します。
+- 代替案（オプショナルチェイニングの徹底）：
+データが空である可能性が1%でもある場合は、`!` で黙らせるのではなく、前述の「オプショナルチェイニング（`?.`）」や `if` 文によるチェックを必ず行ってください。
+
+```typescript
+interface Product {
+  id: number;
+  title: string;
+}
+
+// BAD：中身は空なのに as Product と嘘をついているため、
+// コンパイルは通りますが、実行時に title を読み込もうとしてエラーになります
+const brokenProduct = {} as Product;
+
+// BAD：! を使って強制アクセスしている
+// 引数に product が渡されなかった（undefinedだった）瞬間に画面がフリーズします
+const printProductTitleBad = (product?: Product) => {
+  console.log(product!.title); // 完全禁止
+};
+
+// GOOD：as を使わず、最初から型を満たす正しい初期オブジェクトを定義する
+const newProduct: Product = {
+  id: 101,
+  title: '新しい商品名'
+};
+
+// GOOD：! を使わず、if文で存在チェック（型絞り込み）をしてから安全に使用する
+const printProductTitle = (product?: Product) => {
+  if (product) {
+    console.log(product.title); // この中は100%安全
+  }
+};
+```
