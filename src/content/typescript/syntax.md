@@ -13,6 +13,7 @@ order: 1
 - [文字列の結合（テンプレートリテラル）](#文字列の結合テンプレートリテラル)
 - [安全なプロパティ参照（オプショナルチェイニング）](#安全なプロパティ参照オプショナルチェイニング)
 - [マジックナンバーの禁止](#マジックナンバーの禁止)
+- [レスポンシブルール](#レスポンシブルール)
 - [非同期処理の記述規則（Asynchronous）](#非同期処理の記述規則asynchronous)
 - [モジュールシステムとファイル分割](#モジュールシステムとファイル分割)
 - [XSS（クロスサイトスクリプティング）の防止](#xssクロスサイトスクリプティングの防止)
@@ -115,12 +116,56 @@ console.log(twitterId); // 結果: undefined (画面はクラッシュしない)
 * **理由のない微調整の禁止：**
   デザインデータと数ピクセル合わないからといって、理由のないネガティブマージン（`-3px` など）や位置調整をその場しのぎで行ってはいけません。必ず Flexbox や Grid の配置ルール、あるいは要素のコンポーネント設計自体を見直してください。
 
-
 ```typescript
 // BAD
 const ONE_DAY_MILLISECONDS = 86400000;
 // GOOD
 const ONE_DAY_MILLISECONDS = 24 * 60 * 60 * 1000;
+```
+
+## レスポンシブルール
+
+画面の横幅に応じてJavaScript/TypeScriptの処理を切り替える（例：スマホ時のみハンバーガーメニュー用のスクリプトを有効にする、PC時のみホバー演出を有効にする等）場合は、`resize` イベントではなく、必ず **`window.matchMedia`** と **`change` イベント** を使用して動的に検知してください。
+
+### なぜ `resize` ではなく `matchMedia` なのか（背景）
+* **圧倒的なパフォーマンス向上：**
+  `resize` イベントは、ウインドウ幅が1px変わるごとに何百回も処理が走るため、前述の「デバウンス」などで間引く必要がありました。
+  一方、`matchMedia` の `change` イベントは、画面幅が**指定したブレイクポイント（例：768px）を「またいだ瞬間（ON/OFFが切り替わった時）」にしか発火しない**ため、ブラウザの描画負荷を極限まで抑えることができます。
+
+```typescript
+// utility/utilities.ts
+/**
+ * ブレイクポイント (MediaQueryListで参照されるメジャーブレイクポイント)
+ * ※CSS側の @media (min-width: 768px) と数値を必ず統一すること
+ */
+export const BREAK_POINT = 768;
+
+/**
+ * matchMediaオブジェクトの生成
+ */
+export const mql: MediaQueryList = window.matchMedia(`(min-width: ${BREAK_POINT}px)`);
+
+// sample.ts
+/**
+ * 画面幅の切り替わり時に実行したいレスポンシブ処理
+ * @param event MediaQueryListEvent、または初期実行用のMediaQueryList
+ */
+const handleMediaQueryChange = (event: MediaQueryListEvent | MediaQueryList): void => {
+  if (event.matches) {
+    // 768px以上（PC・タブレットサイズ）の場合の処理
+    console.log('PC・タブレット用スクリプトを実行します');
+    // 例：スマホ用メニューの強制クローズ処理など
+  } else {
+    // 768px未満（スマホサイズ）の場合の処理
+    console.log('スマホ用スクリプトを実行します');
+  }
+};
+
+// 1. ページ読み込み（初期化）時に、現在の画面幅に応じた処理をはじめに1回実行しておく
+handleMediaQueryChange(mql);
+
+// 2. 画面幅がブレイクポイントをまたいだ瞬間のイベント（change）を登録
+mql.addEventListener('change', handleMediaQueryChange);
 ```
 
 ## 非同期処理の記述規則（Asynchronous）
