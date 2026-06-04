@@ -8,6 +8,8 @@ export function formatCategoryName(category: string): string {
       return 'CSS';
     case 'typescript':
       return 'TypeScript';
+    case 'wordpress':
+      return 'WordPress';
     default:
       return category.charAt(0).toUpperCase() + category.slice(1);
   }
