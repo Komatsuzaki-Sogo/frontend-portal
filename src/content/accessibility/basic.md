@@ -99,11 +99,9 @@ WAI-ARIA（`role` 属性や `aria-*` 属性）は、標準のHTMLタグだけで
   position: absolute;
   width: 1px;
   height: 1px;
-  padding: 0;
-  margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+  clip: rect(1px, 1px, 1px, 1px);
+  opacity: 0;
 }
 ```
 
