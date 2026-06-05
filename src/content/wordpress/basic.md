@@ -90,7 +90,7 @@ my-theme/
 │
 ├── assets/               # 静的アセット（ビルドツールからの書き出し先）
 │   ├── css/style.css     # メインCSS（filemtimeによるキャッシュバスティング対象）
-│   └── js/main.js        # Vanilla JS（jQuery非依存。フッターで非同期読み込み）
+│   └── js/main.js        # メインJS（フッターで非同期読み込み）
 │
 └── functions/            # バックエンドロジックの隔離ディレクトリ
     ├── setup.php         # テーマ初期設定（アイキャッチ、メニュー登録など）
@@ -106,6 +106,11 @@ my-theme/
 
 ### 2.2 テンプレート階層とルーティング設計
 * WordPressのテンプレート階層（`index.php` -> `archive.php` -> `category.php` など）を正しく理解し、WordPress本来のルーティングを活かした設計にします。
+
+  > **💡 参考：WordPress テンプレート階層図**
+  > ![WordPress Template Hierarchy](https://developer.wordpress.org/files/2014/10/Screenshot-2019-01-23-00.20.04.png)
+  > （出典：[Theme Developer Handbook](https://developer.wordpress.org/themes/basics/template-hierarchy/) / より詳細な確認は [WP Hierarchy](https://wphierarchy.com/) が便利です）
+
 * カスタム投稿タイプやカスタムタクソノミーを作成する場合は、`single-{post_type}.php` や `archive-{post_type}.php`、`taxonomy-{tax}.php` を用意して対応します。
 * ⚠️ **`query_posts()` の使用は厳禁**:
   - メインクエリを書き換える `query_posts()` は、グローバルなクエリ状態を破壊し、ページネーションの動作不良や不要なSQL発行によるパフォーマンス低下を引き起こすため、**非推奨（絶対に不使用）**とします。
@@ -191,7 +196,7 @@ foreach ( $function_files as $file ) {
 #### スクリプトとスタイルの読み込み（キューイング）:
 テンプレートファイル（`header.php` など）に `<link>` や `<script>` タグを直接ハードコーディングすることは禁止します。必ず `wp_enqueue_script()` および `wp_enqueue_style()` を使用し、`wp_enqueue_scripts` アクションフック経由で読み込ませます。
 
-本プロジェクトでは**脱jQuery（Vanilla JSでの記述）**を基本とし、パフォーマンス最適化のためメインJSはフッターで非同期読み込み（`defer`）させるか、第5引数を `true` に設定して `</body>` 直前で読み込ませます。
+ページのレンダリングブロックを防ぎパフォーマンスを最適化するため、メインJSはフッターで非同期読み込み（`defer`）させるか、`wp_enqueue_script()` の第5引数を設定して `</body>` 直前で読み込ませることを基本とします。
 
 また、アセットファイルが更新された際にブラウザキャッシュを自動で破棄（キャッシュバスティング）するため、パラメータのバージョン情報にはファイルの最終更新時間（`filemtime()`）を渡す設計とします。
 
@@ -203,9 +208,11 @@ function my_theme_enqueue_assets() {
     $css_ver  = file_exists( $css_path ) ? filemtime( $css_path ) : '1.0.0';
     wp_enqueue_style( 'my-theme-style', get_theme_file_uri( '/assets/css/style.css' ), array(), $css_ver );
 
-    // テーマのメインJS（jQuery非依存 / フッター読み込み）
+    // テーマのメインJS（フッター読み込み）
     $js_path = get_theme_file_path( '/assets/js/main.js' );
     $js_ver  = file_exists( $js_path ) ? filemtime( $js_path ) : '1.0.0';
+    
+    // 第5引数に array('strategy' => 'defer') または true を指定してフッターで読み込む
     wp_enqueue_script( 'my-theme-script', get_theme_file_uri( '/assets/js/main.js' ), array(), $js_ver, true );
 }
 add_action( 'wp_enqueue_scripts', 'my_theme_enqueue_assets' );
@@ -226,6 +233,7 @@ WordPressの拡張は、本体コアコードやサードパーティ製プラ�
     }
     add_action( 'after_setup_theme', 'my_theme_setup' );
     ```
+
 * **フィルターフック (Filter Hooks)**:
   - 出力されるテキスト、クエリ条件、設定値などの「データ」を、出力やDB保存の直前に変更・加工するために使用します。
   - 例: 本文の抜粋（Excerpt）の文字数を変更する `excerpt_length`
@@ -447,3 +455,43 @@ $args = array(
 );
 $news_ids_query = new WP_Query( $args );
 ```
+
+
+## 5. アップデートと保守のルール
+
+WordPressは世界で最もシェアが高いCMSである反面、脆弱性を突いた攻撃の標的になりやすいため「放置」は重大なセキュリティリスク（サイト改ざんや情報漏洩）に直結します。
+安定稼働とセキュリティを両立させるため、アップデートに関しては以下のルールを標準とします。
+
+### 5.1 WordPressコア（本体）のアップデート
+コアのアップデートは、その性質（マイナーかメジャーか）によって対応を変えます。
+
+* **マイナーアップデート（例: 6.4.1 ➔ 6.4.2）**
+  - **対応: 自動更新（ON）**
+  - バグ修正や致命的なセキュリティパッチのみが含まれ、互換性が崩れるリスクは極めて低いため、基本的にはWordPress標準の「自動更新」を有効にしておき、常に最新の安全な状態を保ちます。
+* **メジャーアップデート（例: 6.4 ➔ 6.5）**
+  - **対応: 手動更新（ステージング検証必須）**
+  - 新機能の追加や内部システムの変更が含まれるため、使用しているプラグインやテーマとの互換性エラー（画面が真っ白になる等のFatal Error）を引き起こす可能性があります。
+  - **自動更新は必ず無効化**しておき、ローカル環境またはステージング環境で事前にアップデートテスト・動作確認を行ってから、本番環境に適用します。
+
+### 5.2 プラグインのアップデート
+* **基本対応: 手動更新（自動更新はOFF）**
+  - プラグインのアップデートは、マイナー・メジャー問わずテーマ側のJS/CSSや他のプラグインと競合するリスクがあります。原則として自動更新は無効化します。
+  - 定期メンテナンス時、または脆弱性（セキュリティアラート）が発表されたタイミングで、検証環境でテストを行ってから手動でアップデートを実施します。
+
+---
+
+> **💡 参考：アップデートのコード制御（強制設定）について**
+> 案件によっては、クライアントが誤って管理画面から自動更新の設定を変えてしまい、本番環境が崩れる事故を防ぐため、システム側（コード）で挙動を固定化（ロック）するアプローチも有効です。プロジェクトの要件に応じて、以下の設定導入を検討してください。
+> 
+> **【設定例】（`wp-config.php` に記述してコアの更新を制御）**
+> ```php
+> // マイナーアップデートのみ自動更新を許可し、メジャーアップデートを無効化
+> define( 'WP_AUTO_UPDATE_CORE', 'minor' );
+> ```
+> 
+> **【設定例】（テーマの `functions/security.php` に記述してプラグイン等の更新を制御）**
+> ```php
+> // プラグイン・テーマの自動更新を強制的に無効化
+> add_filter( 'auto_update_plugin', '__return_false' );
+> add_filter( 'auto_update_theme', '__return_false' );
+> ```
