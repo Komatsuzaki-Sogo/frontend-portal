@@ -50,11 +50,15 @@ body {
   }
 
   h2 {
-    font-size: 32px;
+    font-size: 40px;
     padding-bottom: 8px;
     border-bottom: 4px solid var(--foreground);
     font-weight: bold;
     margin-top: 40px;
+
+    & + * {
+      margin-top: 32px;
+    }
   }
 
   h3 {
@@ -63,6 +67,20 @@ body {
     border-left: 4px solid var(--foreground);
     font-weight: bold;
     margin-top: 32px;
+
+    & + * {
+      margin-top: 24px;
+    }
+  }
+
+  h4 {
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 20px;
+
+    & + * {
+      margin-top: 16px;
+    }
   }
 
   p,
@@ -95,7 +113,7 @@ body {
   }
 
   ul {
-    margin-top: 40px;
+    margin-top: 24px;
 
     li {
       position: relative;
