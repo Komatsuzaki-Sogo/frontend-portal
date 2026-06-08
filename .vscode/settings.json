@@ -2,5 +2,4 @@
   // "editor.formatOnSave": true
   // "editor.defaultFormatter": "esbenp.prettier-vscode",
   // "prettier.htmlWhitespaceSensitivity": "ignore",
-  "editor.formatOnSave": false
 }
